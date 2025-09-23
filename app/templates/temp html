@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>LoadLinker — Login (Single-file)</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* ========= Variables & Base ========= */
+    :root{
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #0d6efd;
+    }
+    html,body{height:100%;margin:0;overflow:hidden;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+    body{background:linear-gradient(120deg,#f2f6fb 0%, #ffffff 50%);color:#111827;transition:background .35s ease,color .35s ease}
+    body.dark-mode{--bg:#0b1220;--card:#0f1724;--muted:#9aa4b2;--accent:#6aa8ff;background:linear-gradient(120deg,#061021 0%, #0b1220 60%);color:#e6eef8}
+
+    /* ========= Navbar ========= */
+    .navbar{background:transparent;padding-top:.35rem;padding-bottom:.35rem;z-index:20}
+    .nav-logo{object-fit:contain;border-radius:4px}
+    .brand-text{font-weight:700;font-size:1.02rem;margin-left:6px}
+
+    /* ========= Main layout (no scroll) ========= */
+    .app-main{height:calc(100vh - 64px);min-height:520px;padding:.5rem;display:flex;align-items:center;justify-content:center}
+    .no-scroll-row{height:100%;align-items:center}
+
+    /* Left info card */
+    .info-card{width:92%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.45));border:1px solid rgba(13,110,253,0.06);border-radius:12px;padding:1.25rem}
+    body.dark-mode .info-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04)}
+
+    /* Login card */
+    .login-card{border:none;border-radius:12px;max-height:100%}
+    .login-card .card-body{background:var(--card);display:flex;flex-direction:column;justify-content:space-between;padding:1rem}
+    .login-avatar{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid rgba(0,0,0,0.06)}
+    body.dark-mode .login-avatar{border-color:rgba(255,255,255,0.04)}
+
+    /* Buttons & inputs */
+    .btn-primary{background:linear-gradient(90deg,#0d6efd,#3b82f6);border:none;box-shadow:0 6px 18px rgba(13,110,253,0.12)}
+    .form-control,.input-group .btn{border-radius:8px}
+
+    .card-footer{background:transparent;border-top:1px dashed rgba(0,0,0,0.04);margin-top:.5rem}
+
+    /* Responsiveness & fitting to viewport (reduce spacing on short viewports) */
+    @media (max-height:760px){
+      .app-main{min-height:auto;height:calc(100vh - 60px)}
+      .info-card{padding:.9rem}
+      .login-card .card-body{padding:.8rem}
+      h1.display-6{font-size:1.25rem}
+      .lead{font-size:.95rem}
+      .nav-logo{width:32px;height:32px}
+    }
+    @media (max-width:992px){
+      .info-card{display:none}
+      .app-main{height:calc(100vh - 56px);padding:.75rem}
+      .login-avatar{display:none}
+    }
+    @media (max-height:560px){
+      .brand-text{font-size:.95rem}
+      .btn-primary{padding:.5rem .75rem;font-size:.95rem}
+      .form-control.form-control-lg{padding:.5rem .6rem;font-size:.95rem}
+      .login-card .card-body{gap:.25rem}
+    }
+
+    /* small polish */
+    .bi{vertical-align:-.125em}
+    *{box-sizing:border-box}
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <!-- user-provided image path -->
+        <img src="../static/images/logo.png" alt="LoadLinker Logo" class="nav-logo" width="36" height="36">
+        <span class="brand-text">LoadLinker</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+              aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+        <ul class="navbar-nav align-items-lg-center">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+          <li class="nav-item ms-3">
+            <button id="themeToggle" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" aria-label="Toggle theme">
+              <!-- initial icon — JS will update after DOM ready -->
+              <i id="themeIcon" class="bi bi-moon-fill" aria-hidden="true"></i>
+              <span class="visually-hidden">Toggle theme</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main: centered and fits viewport -->
+  <main class="app-main d-flex align-items-center justify-content-center">
+    <div class="container-fluid px-3">
+      <div class="row gx-4 gy-0 align-items-center justify-content-center no-scroll-row">
+        <!-- Info column (hidden on narrow screens) -->
+        <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+          <div class="info-card">
+            <h1 class="display-6 mb-2">Where Loads Meet Wheels</h1>
+            <p class="lead mb-3">Fast matching, transparent pricing, secure paperwork — all in one place.</p>
+            <ul class="list-unstyled mb-0 small">
+              <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Smart matching & routing</li>
+              <li class="mb-2"><i class="bi bi-check2-circle me-2"></i>Secure payments</li>
+              <li><i class="bi bi-check2-circle me-2"></i>Real-time tracking</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Login column -->
+        <div class="col-lg-4 col-md-6 col-10">
+          <div class="card login-card shadow rounded-4 overflow-hidden">
+            <div class="card-body">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h3 class="mb-0">Welcome back</h3>
+                    <small class="text-muted">Sign in to your LoadLinker account</small>
+                  </div>
+                  <!-- small safe avatar (uses same logo file so it won't break) -->
+                  <img src="../static/images/logo.png" alt="LL avatar" class="login-avatar" width="48" height="48">
+                </div>
+
+                <form id="loginForm" class="mb-2" novalidate>
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control form-control-lg" id="email" placeholder="you@company.com" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="password" class="form-label d-flex justify-content-between">
+                      <span>Password</span>
+                      <a href="#" class="small">Forgot?</a>
+                    </label>
+                    <div class="input-group input-group-lg">
+                      <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                      <button class="btn btn-outline-secondary" type="button" id="pwToggle" aria-label="Show password">
+                        <i id="pwIcon" class="bi bi-eye-fill" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center mb-3 small">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="remember">
+                      <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    <div>New? <a href="#">Create account</a></div>
+                  </div>
+
+                  <div class="d-grid mb-1">
+                    <button type="submit" class="btn btn-primary btn-lg fw-semibold">Sign in</button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="card-footer text-center py-2 small">
+                By signing in you agree to our <a href="#">Terms</a> & <a href="#">Privacy</a>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- row -->
+    </div> <!-- container -->
+  </main>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    /**
+     * Single-file JS:
+     * - Waits for DOMContentLoaded
+     * - Robust theme toggle (persists preference)
+     * - Password show/hide
+     * - Demo sign-in handler
+     */
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const LS_KEY = 'loadlinker-theme'; // consistent key
+      const body = document.body;
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+
+      // Apply theme function
+      function applyTheme(mode) {
+        if (mode === 'dark') {
+          body.classList.add('dark-mode');
+          themeIcon.className = 'bi bi-sun-fill';
+        } else {
+          body.classList.remove('dark-mode');
+          themeIcon.className = 'bi bi-moon-fill';
+        }
+      }
+
+      // Initialize theme: stored preference -> system preference -> light
+      try {
+        const stored = localStorage.getItem(LS_KEY);
+        if (stored === 'dark' || stored === 'light') {
+          applyTheme(stored);
+        } else {
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          applyTheme(prefersDark ? 'dark' : 'light');
+        }
+      } catch (e) {
+        // localStorage may be unavailable in some environments; fall back to system
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+      }
+
+      // Toggle handler
+      if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+          const isDark = body.classList.contains('dark-mode');
+          const newMode = isDark ? 'light' : 'dark';
+          applyTheme(newMode);
+          try { localStorage.setItem(LS_KEY, newMode); } catch (e) { /* ignore */ }
+        });
+      }
+
+      // Password show/hide
+      const pwToggle = document.getElementById('pwToggle');
+      const pwInput = document.getElementById('password');
+      const pwIcon = document.getElementById('pwIcon');
+      if (pwToggle && pwInput) {
+        pwToggle.addEventListener('click', function () {
+          const isPwd = pwInput.type === 'password';
+          pwInput.type = isPwd ? 'text' : 'password';
+          pwIcon.className = isPwd ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill';
+        });
+      }
+
+      // Demo form submit (replace with real backend)
+      const form = document.getElementById('loginForm');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const email = document.getElementById('email').value.trim();
+          const password = pwInput ? pwInput.value : '';
+          if (!email || !password) {
+            // Simple client-side validation message
+            alert('Please enter email and password.');
+            return;
+          }
+          const btn = form.querySelector('button[type="submit"]');
+          const originalText = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = 'Signing in...';
+          // simulate auth
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            alert('Signed in (demo). Integrate with backend to proceed.');
+          }, 850);
+        });
+      }
+
+      // Optional: when browser theme changes, adopt it only if user hasn't chosen explicitly
+      try {
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        mql.addEventListener && mql.addEventListener('change', function (e) {
+          const stored = localStorage.getItem(LS_KEY);
+          if (!stored) applyTheme(e.matches ? 'dark' : 'light');
+        });
+      } catch (e) { /* ignore older browsers */ }
+    });
+  </script>
+</body>
+</html>
