@@ -1,60 +1,61 @@
+/* Basic layout & no-scroll settings */
 :root{
   --bg: #f8fafc;
   --card: #ffffff;
   --muted: #6b7280;
-  --accent: #0d6efd; /* bootstrap primary */
-  --glass: rgba(255,255,255,0.6);
+  --accent: #0d6efd;
 }
-
-body {
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* user requested single page - no scrolling */
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   background: linear-gradient(120deg,#f2f6fb 0%, #ffffff 50%);
   color: #111827;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  transition: background .35s ease, color .35s ease;
+  -webkit-font-smoothing:antialiased;
 }
 
-/* Dark mode variables (applied when .dark-mode on body) */
+/* Dark mode */
 body.dark-mode {
   --bg: #0b1220;
   --card: #0f1724;
   --muted: #9aa4b2;
   --accent: #6aa8ff;
-  --glass: rgba(255,255,255,0.03);
   background: linear-gradient(120deg,#061021 0%, #0b1220 60%);
   color: #e6eef8;
 }
 
 /* Navbar */
 .navbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   background: transparent;
-  backdrop-filter: blur(6px);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  z-index: 20;
 }
-.navbar .brand-text{
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  font-size: 1.05rem;
-}
-.logo-mark {
-  color: var(--accent);
+.nav-logo { object-fit: contain; border-radius: 4px; }
+.brand-text { font-weight:700; font-size:1.02rem; margin-left:2px; }
+
+/* Main fills remaining viewport */
+.app-main {
+  height: calc(100vh - 64px); /* reserve nav height */
+  min-height: 520px;
+  padding: 0.5rem;
 }
 
-/* Make nav-links subtle */
-.navbar .nav-link {
-  color: rgba(17,24,39,.75);
-  transition: color .2s;
+/* Row ensures content centered and won't overflow */
+.no-scroll-row {
+  height: 100%;
+  align-items: center;
 }
-body.dark-mode .navbar .nav-link {
-  color: rgba(230,238,248,.85);
-}
-.navbar .nav-link:hover { color: var(--accent); }
 
-/* Info card */
+/* Info card (left) */
 .info-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35));
+  width: 92%;
+  max-width: 520px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.45));
   border: 1px solid rgba(13,110,253,0.06);
+  border-radius: 12px;
+  padding: 1.25rem;
 }
 body.dark-mode .info-card {
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -62,17 +63,28 @@ body.dark-mode .info-card {
 }
 
 /* Login card */
-.login-card { 
+.login-card {
   border: none;
-  border-radius: 14px;
-  overflow: hidden;
+  border-radius: 12px;
+  max-height: 100%;
 }
 .login-card .card-body {
   background: var(--card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
 }
-body.dark-mode .login-card .card-body {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+
+/* Avatar on login card */
+.login-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.06);
 }
+body.dark-mode .login-avatar { border-color: rgba(255,255,255,0.04); }
 
 /* Buttons */
 .btn-primary {
@@ -80,46 +92,46 @@ body.dark-mode .login-card .card-body {
   border: none;
   box-shadow: 0 6px 18px rgba(13,110,253,0.12);
 }
-body.dark-mode .btn-primary {
-  background: linear-gradient(90deg, #3b82f6, #6aa8ff);
-  box-shadow: 0 6px 20px rgba(66,153,255,0.08);
-}
 
-/* Small UI polish */
-input.form-control {
-  border-radius: 8px;
-  box-shadow: none;
-}
-.input-group .btn {
+/* Make sure controls don't overflow vertically */
+.form-control, .input-group .btn {
   border-radius: 8px;
 }
 
+/* Footer */
 .card-footer {
   background: transparent;
   border-top: 1px dashed rgba(0,0,0,0.04);
-}
-body.dark-mode .card-footer {
-  border-top-color: rgba(255,255,255,0.03);
+  margin-top: 0.5rem;
 }
 
-/* Responsive spacing */
-@media (max-width: 991px) {
+/* Prevent page from needing scroll on shorter screens:
+   scale typography and spacing when height is small */
+@media (max-height: 760px) {
+  .app-main { min-height: auto; height: calc(100vh - 60px); }
+  .info-card { padding: .9rem; }
+  .login-card .card-body { padding: .8rem; }
+  h1.display-6 { font-size: 1.25rem; }
+  .lead { font-size: .95rem; }
+  .nav-logo { width: 32px; height: 32px; }
+}
+
+/* Smaller / narrow screens adjustments: keep everything visible */
+@media (max-width: 992px) {
   .info-card { display: none; }
-  body { background: linear-gradient(180deg,#ffffff 0%, #f2f6fb 50%); }
-  body.dark-mode { background: linear-gradient(180deg,#061021 0%, #071428 70%); }
+  .app-main { height: calc(100vh - 56px); padding: 0.75rem; }
+  .login-card { transform: translateY(0); }
+  .login-card .card-body { padding: .9rem; }
+  .login-avatar { display: none; } /* hide avatar on small devices to save vertical space */
 }
 
-/* Tiny focus & accessibility */
-.btn:focus, .form-control:focus {
-  box-shadow: 0 0 0 .2rem rgba(13,110,253,0.12);
-  outline: none;
+/* Tiny displays (extra short heights) — reduce some spacing and font sizes */
+@media (max-height: 560px) {
+  .brand-text { font-size: .95rem; }
+  .btn-primary { padding: .5rem .75rem; font-size: .95rem; }
+  .form-control.form-control-lg { padding: .5rem .6rem; font-size: .95rem; }
+  .login-card .card-body { gap: .25rem; }
 }
 
-/* small icon tweaks */
-.bi { vertical-align: -.125em; }
-
-/* subtle hover for social buttons */
-.btn-outline-secondary:hover {
-  transform: translateY(-2px);
-  transition: transform .18s ease;
-}
+/* Ensure no unintended scrollbars inside components */
+* { box-sizing: border-box; }
