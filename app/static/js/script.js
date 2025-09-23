@@ -1,41 +1,66 @@
-// Dark Mode toggle with persistence
-const body = document.body;
-const nav = document.getElementById('mainNav');
-const toggleBtn = document.getElementById('toggleMode');
-const toggleIcon = toggleBtn.querySelector('i');
-
-function applyMode(isDark){
-  if(isDark){
-    body.classList.add('dark-mode');
-    nav.classList.add('dark-mode');
-    toggleIcon.classList.replace('fa-moon','fa-sun');
-  } else {
-    body.classList.remove('dark-mode');
-    nav.classList.remove('dark-mode');
-    toggleIcon.classList.replace('fa-sun','fa-moon');
-  }
-}
-
-// Load preference
-applyMode(localStorage.getItem('ll_dark_mode') === '1');
-
-toggleBtn.addEventListener('click', () => {
-  const isNowDark = !body.classList.contains('dark-mode');
-  applyMode(isNowDark);
-  localStorage.setItem('ll_dark_mode', isNowDark ? '1' : '0');
-});
-
-// Bootstrap validation
+// Theme toggle + remember preference
 (function () {
-  'use strict'
-  const forms = document.querySelectorAll('.needs-validation')
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-      form.classList.add('was-validated')
-    }, false)
-  })
+  const body = document.body;
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const stored = localStorage.getItem('loadlinker-theme');
+
+  // Initialize theme
+  function applyTheme(mode) {
+    if (mode === 'dark') {
+      body.classList.add('dark-mode');
+      themeIcon.className = 'bi bi-sun-fill';
+    } else {
+      body.classList.remove('dark-mode');
+      themeIcon.className = 'bi bi-moon-fill';
+    }
+  }
+
+  // Determine default: use stored, else prefer system
+  if (stored) {
+    applyTheme(stored);
+  } else {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+
+  themeToggle.addEventListener('click', function () {
+    const isDark = body.classList.contains('dark-mode');
+    const newMode = isDark ? 'light' : 'dark';
+    applyTheme(newMode);
+    try { localStorage.setItem('loadlinker-theme', newMode); } catch (e) { /* ignore */ }
+  });
+
+  // Password show/hide
+  const pwToggle = document.getElementById('pwToggle');
+  const pwInput = document.getElementById('password');
+  const pwIcon = document.getElementById('pwIcon');
+  pwToggle.addEventListener('click', function () {
+    const isPwd = pwInput.type === 'password';
+    pwInput.type = isPwd ? 'text' : 'password';
+    pwIcon.className = isPwd ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill';
+  });
+
+  // Fake login handler (replace with real auth)
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    // Basic client-side validation
+    if (!email || !pwInput.value) {
+      alert('Please enter email and password.');
+      return;
+    }
+    // Replace this with real authentication call
+    // For demo: simple success animation
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = 'Signing in...';
+    setTimeout(() => {
+      btn.innerHTML = 'Sign in';
+      btn.disabled = false;
+      // in a real app you'd redirect after successful auth:
+      alert('Signed in (demo). Implement server auth to continue.');
+    }, 900);
+  });
 })();
