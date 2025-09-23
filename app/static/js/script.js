@@ -1,11 +1,10 @@
-// Theme toggle + remember preference
+// Theme toggle + remember preference + password toggle + simple demo login
 (function () {
   const body = document.body;
   const themeToggle = document.getElementById('themeToggle');
   const themeIcon = document.getElementById('themeIcon');
   const stored = localStorage.getItem('loadlinker-theme');
 
-  // Initialize theme
   function applyTheme(mode) {
     if (mode === 'dark') {
       body.classList.add('dark-mode');
@@ -16,7 +15,6 @@
     }
   }
 
-  // Determine default: use stored, else prefer system
   if (stored) {
     applyTheme(stored);
   } else {
@@ -41,26 +39,29 @@
     pwIcon.className = isPwd ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill';
   });
 
-  // Fake login handler (replace with real auth)
+  // Demo login handler
   const form = document.getElementById('loginForm');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
-    // Basic client-side validation
     if (!email || !pwInput.value) {
       alert('Please enter email and password.');
       return;
     }
-    // Replace this with real authentication call
-    // For demo: simple success animation
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
+    const originalText = btn.innerHTML;
     btn.innerHTML = 'Signing in...';
     setTimeout(() => {
-      btn.innerHTML = 'Sign in';
+      btn.innerHTML = originalText;
       btn.disabled = false;
-      // in a real app you'd redirect after successful auth:
-      alert('Signed in (demo). Implement server auth to continue.');
-    }, 900);
+      alert('Signed in (demo). Integrate with your backend to proceed.');
+    }, 800);
+  });
+
+  // Optional: ensure viewport resizing doesn't create scrollbars
+  window.addEventListener('resize', function () {
+    // small safeguard: if a scrollbar appears, reduce some paddings (handled via CSS media queries)
+    // No JS resizing logic needed — CSS media queries take care of fitting the content.
   });
 })();
